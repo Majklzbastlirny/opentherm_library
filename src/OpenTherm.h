@@ -159,6 +159,8 @@ public:
 	float getBoilerTemperature();
     float getReturnTemperature();
     bool setDHWSetpoint(float temperature);
+	float getOutsideTemperature();
+    float getDHWFlowrate();
     float getDHWTemperature();
     float getModulation();
     float getPressure();
