@@ -361,48 +361,195 @@ unsigned int OpenTherm::temperatureToData(float temperature) {
 	return data;
 }
 
-//basic requests
+//requests
 
-unsigned long OpenTherm::setBoilerStatus(bool enableCentralHeating, bool enableHotWater, bool enableCooling, bool enableOutsideTemperatureCompensation, bool enableCentralHeating2) {
-	return sendRequest(buildSetBoilerStatusRequest(enableCentralHeating, enableHotWater, enableCooling, enableOutsideTemperatureCompensation, enableCentralHeating2));
+//READ ONLY REQUESTS
+//0 = Status, // flag8 / flag8  Master and Slave Status flags.
+
+//3 = SConfigSMemberIDcode, // flag8 / u8  Slave Configuration Flags /  Slave MemberID Code
+
+//5 = ASFflags, // / OEM-fault-code  flag8 / u8  Application-specific fault flags and OEM fault code
+unsigned char OpenTherm::getFault() {
+    return ((sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::ASFflags, 0)) >> 8) & 0xff);
 }
 
-bool OpenTherm::setBoilerTemperature(float temperature) {
-	unsigned long response = sendRequest(buildSetBoilerTemperatureRequest(temperature));
-	return isValidResponse(response);
-}
+//6 = RBPflags, // flag8 / flag8  Remote boiler parameter transfer-enable & read/write flags
 
-float OpenTherm::getBoilerTemperature() {
-	unsigned long response = sendRequest(buildGetBoilerTemperatureRequest());
-	return isValidResponse(response) ? getFloat(response) : 0;
-}
+//9 = TrOverride, // f8.8  Remote override room setpoint
 
-float OpenTherm::getReturnTemperature() {
-    unsigned long response = sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Tret, 0));
-    return isValidResponse(response) ? getFloat(response) : 0;
-}
+//10 = TSP, // u8 / u8  Number of Transparent-Slave-Parameters supported by slave
 
-bool OpenTherm::setDHWSetpoint(float temperature) {
-    unsigned int data = temperatureToData(temperature);
-    unsigned long response = sendRequest(buildRequest(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::TdhwSet, data));
-    return isValidResponse(response);
-}
-    
-float OpenTherm::getDHWTemperature() {
-    unsigned long response = sendRequest(buildRequest(OpenThermMessageType::READ_DATA, OpenThermMessageID::Tdhw, 0));
-    return isValidResponse(response) ? getFloat(response) : 0;
-}
+//12 = FHBsize, // u8 / u8  Size of Fault-History-Buffer supported by slave
 
+//13 = FHBindexFHBvalue, // u8 / u8  Index number / Value of referred-to fault-history buffer entry.
+
+//15 = MaxCapacityMinModLevel, // u8 / u8  Maximum boiler capacity (kW) / Minimum boiler modulation level(%)
+
+//17 = RelModLevel, // f8.8  Relative Modulation Level (%)
 float OpenTherm::getModulation() {
     unsigned long response = sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::RelModLevel, 0));
     return isValidResponse(response) ? getFloat(response) : 0;
 }
 
+//18 = CHPressure, // f8.8  Water pressure in central heating circuit  (bar)
 float OpenTherm::getPressure() {
     unsigned long response = sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::CHPressure, 0));
     return isValidResponse(response) ? getFloat(response) : 0;
 }
 
-unsigned char OpenTherm::getFault() {
-    return ((sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::ASFflags, 0)) >> 8) & 0xff);
+//19 = DHWFlowRate, // f8.8  Water flow rate in domestic hot water circuit. (litres/minute)
+float OpenTherm::getDHWFlowrate() {
+	unsigned long response = sendRequest(buildRequest(OpenThermMessageType::READ_DATA, OpenThermMessageID::DHWFlowRate, 0));
+	return isValidResponse(response) ? getFloat(response) : 0;
+}
+
+//25 = Tboiler, // f8.8  Boiler flow water temperature (°C)
+float OpenTherm::getBoilerTemperature() {
+	unsigned long response = sendRequest(buildGetBoilerTemperatureRequest());
+	return isValidResponse(response) ? getFloat(response) : 0;
+}
+
+//26 = Tdhw, // f8.8  domestic hot water temperature (°C)
+float OpenTherm::getDHWTemperature() {
+    unsigned long response = sendRequest(buildRequest(OpenThermMessageType::READ_DATA, OpenThermMessageID::Tdhw, 0));
+    return isValidResponse(response) ? getFloat(response) : 0;
+}
+
+//27 = Toutside, // f8.8  Outside temperature (°C)
+float OpenTherm::getOutsideTemperature() {
+	unsigned long response = sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Toutside, 0));
+	return isValidResponse(response) ? getFloat(response) : 0;
+}
+
+//28 = Tret, // f8.8  Return water temperature (°C)
+float OpenTherm::getReturnTemperature() {
+    unsigned long response = sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Tret, 0));
+    return isValidResponse(response) ? getFloat(response) : 0;
+}
+
+//29 = Tstorage, // f8.8  Solar storage temperature (°C)
+float OpenTherm::getSolarStorageTemperature() {
+    unsigned long response = sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Tstorage, 0));
+    return isValidResponse(response) ? getFloat(response) : 0;
+}
+
+//30 = Tcollector, // f8.8  Solar collector temperature (°C)
+float OpenTherm::getSolarCollectorTemperature() {
+    unsigned long response = sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Tcollector, 0));
+    return isValidResponse(response) ? getFloat(response) : 0;
+}
+
+//31 = TflowCH2, // f8.8  Flow water temperature CH2 circuit (°C)
+float OpenTherm::getCH2Temperature() {
+    unsigned long response = sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::TflowCH2, 0));
+    return isValidResponse(response) ? getFloat(response) : 0;
+}
+
+//32 = Tdhw2, // f8.8  Domestic hot water temperature 2 (°C)
+float OpenTherm::getDHW2Temperature() {
+    unsigned long response = sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Tdhw2, 0));
+    return isValidResponse(response) ? getFloat(response) : 0;
+}
+
+//33 = Texhaust, // s16  Boiler exhaust temperature (°C)
+float OpenTherm::getExhaustTemperature() {
+    unsigned long response = sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::Texhaust, 0));
+    return isValidResponse(response) ? getFloat(response) : 0;
+}
+
+//48 = TdhwSetUBTdhwSetLB,  // s8 / s8  domestic hot water setpoint upper & lower bounds for adjustment  (°C)
+
+//49 = MaxTSetUBMaxTSetLB, // s8 / s8  Max central heating water setpoint upper & lower bounds for adjustment  (°C)
+
+//50 = HcratioUBHcratioLB, // s8 / s8  OTC heat curve ratio upper & lower bounds for adjustment
+
+//100 = RemoteOverrideFunction, // flag8 / -  Function of manual and program changes in master and remote room setpoint.
+
+//115 = OEMDiagnosticCode , // u16  OEM-specific diagnostic/service code
+
+//125 = OpenThermVersionSlave, // f8.8  The implemented version of the OpenTherm Protocol Specification in the slave.
+float OpenTherm::getOTSlaveVersion() {
+    unsigned long response = sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::OpenThermVersionSlave, 0));
+    return isValidResponse(response) ? getFloat(response) : 0;
+}
+
+//127 = SlaveVersion, // u8 / u8  Slave product version number and type
+float OpenTherm::getSlaveVersion() {
+    unsigned long response = sendRequest(buildRequest(OpenThermRequestType::READ, OpenThermMessageID::SlaveVersion, 0));
+    return isValidResponse(response) ? getFloat(response) : 0;
+}
+
+
+
+
+//WRITE ONLY REQUESTS
+//1 = TSet, // f8.8  Control setpoint  ie central heating  water temperature setpoint (°C)
+bool OpenTherm::setBoilerTemperature(float temperature) {
+	unsigned long response = sendRequest(buildSetBoilerTemperatureRequest(temperature));
+	return isValidResponse(response);
+}
+
+//2 = MConfigMMemberIDcode, // flag8 / u8  Master Configuration Flags /  Master MemberID Code
+
+//4 = Command, // u8 / u8  Remote Command
+
+//7 = CoolingControl, // f8.8  Cooling control signal (%)
+
+//8 = TsetCH2, // f8.8  Control setpoint for 2e central heating circuit (°C)
+
+//14 = MaxRelModLevelSetting, // f8.8  Maximum relative modulation level setting (%)
+
+//16 = TrSet, // f8.8  Room Setpoint (°C)
+
+//23 = TrSetCH2, // f8.8  Room Setpoint for 2nd central heating circuit (°C)
+
+//24 = Tr, // f8.8  Room temperature (°C)
+
+//124 = OpenThermVersionMaster, // f8.8  The implemented version of the OpenTherm Protocol Specification in the master.
+
+//126 = MasterVersion, // u8 / u8  Master product version number and type
+
+
+
+//READ-WRITE REQUESTS
+//11 = TSPindexTSPvalue, // u8 / u8  Index number / Value of referred-to transparent slave parameter.
+
+//20 = 	DayTime, // special / u8  Day of Week and Time of Day
+
+//21 = Date, // u8 / u8  Calendar date
+
+//22 = Year, // u16  Calendar year
+
+//56 = TdhwSet = 56, // f8.8  domestic hot water setpoint (°C)    (Remote parameter 1)
+bool OpenTherm::setDHWSetpoint(float temperature) {
+    unsigned int data = temperatureToData(temperature);
+    unsigned long response = sendRequest(buildRequest(OpenThermMessageType::WRITE_DATA, OpenThermMessageID::TdhwSet, data));
+    return isValidResponse(response);
+}
+
+//57= MaxTSet, // f8.8  Max central heating water setpoint (°C)  (Remote parameters 2)
+
+//58 = Hcratio, // f8.8  OTC heat curve ratio (°C)  (Remote parameter 3)
+
+//116 = BurnerStarts, // u16  Number of starts burner
+
+//117 = CHPumpStarts, // u16  Number of starts central heating pump
+
+//118 = DHWPumpValveStarts, // u16  Number of starts domestic hot water pump/valve
+
+//119 = DHWBurnerStarts, // u16  Number of starts burner during domestic hot water mode
+
+//120 = BurnerOperationHours, // u16  Number of hours that burner is in operation (i.e. flame on)
+
+//121 = CHPumpOperationHours, // u16  Number of hours that central heating pump has been running
+
+//122 = DHWPumpValveOperationHours, // u16  Number of hours that domestic hot water pump has been running or domestic hot water valve has been opened
+
+//123 = DHWBurnerOperationHours, // u16  Number of hours that burner is in operation during domestic hot water mode
+
+
+
+
+unsigned long OpenTherm::setBoilerStatus(bool enableCentralHeating, bool enableHotWater, bool enableCooling, bool enableOutsideTemperatureCompensation, bool enableCentralHeating2) {
+	return sendRequest(buildSetBoilerStatusRequest(enableCentralHeating, enableHotWater, enableCooling, enableOutsideTemperatureCompensation, enableCentralHeating2));
 }
