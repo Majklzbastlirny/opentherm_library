@@ -153,18 +153,40 @@ public:
 	float getFloat(const unsigned long response) const;	
 	unsigned int temperatureToData(float temperature);
 
-	//basic requests
-	unsigned long setBoilerStatus(bool enableCentralHeating, bool enableHotWater = false, bool enableCooling = false, bool enableOutsideTemperatureCompensation = false, bool enableCentralHeating2 = false);
-	bool setBoilerTemperature(float temperature);
-	float getBoilerTemperature();
-    float getReturnTemperature();
-    bool setDHWSetpoint(float temperature);
-	float getOutsideTemperature();
-    float getDHWFlowrate();
-    float getDHWTemperature();
+	//requests
+	//READ ONLY REQUESTS
+
+    unsigned char getFault();
     float getModulation();
     float getPressure();
-    unsigned char getFault();
+	float getDHWFlowrate();
+	float getBoilerTemperature();
+    float getDHWTemperature();
+	float getOutsideTemperature();
+    float getReturnTemperature();
+	float getSolarStorageTemperature();
+	float getSolarCollectorTemperature();
+	float getCH2Temperature();
+	float getDHW2Temperature();
+	float getExhaustTemperature();
+
+	float getOTSlaveVersion();
+	float getSlaveVersion();
+
+
+
+	//WRITE ONLY REQUESTS
+
+	bool setBoilerTemperature(float temperature);
+
+	//READ-WRITE REQUESTS
+
+    bool setDHWSetpoint(float temperature);
+
+	unsigned long setBoilerStatus(bool enableCentralHeating, bool enableHotWater = false, bool enableCooling = false, bool enableOutsideTemperatureCompensation = false, bool enableCentralHeating2 = false);
+
+
+
 
 private:
 	const int inPin;

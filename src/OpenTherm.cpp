@@ -529,7 +529,7 @@ bool OpenTherm::setDHWSetpoint(float temperature) {
 
 //57= MaxTSet, // f8.8  Max central heating water setpoint (°C)  (Remote parameters 2)
 
-//58 = Hcratio, // f8.8  OTC heat curve ratio (°C)  (Remote parameter 3)
+//58 = Hcratio, // f8.8  OTC heat curve ratio (°C)  (Remote parameter 3) 6mm(3,15mm);2,5mm
 
 //116 = BurnerStarts, // u16  Number of starts burner
 
